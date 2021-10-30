@@ -9,7 +9,8 @@ FEWNERD_COARSE_TYPES: list[str] = [
     'art',
     'product',
     'event',
-    'other'
+    'other',
+    'O' # outside tag
 ]
 
 FEWNERD_COARSE_TYPES_TO_FINE_TYPES: dict[str, list[str]] = {
@@ -94,7 +95,8 @@ FEWNERD_COARSE_TYPES_TO_FINE_TYPES: dict[str, list[str]] = {
         'law',
         'livingthing',
         'medical',
-    ]
+    ],
+    'O': ['O']
 }
 
 FEWNERD_COARSE_FINE_TYPES: list[tuple[str, str]] = [
@@ -102,6 +104,21 @@ FEWNERD_COARSE_FINE_TYPES: list[tuple[str, str]] = [
     for coarse, fine_types in FEWNERD_COARSE_TYPES_TO_FINE_TYPES.items()
     for fine in fine_types
 ]
+
+
+# take a label as it appears in the FEWNERD dataset and split it into coarse
+# and fine
+def split(combined: str) -> tuple[str, str]:
+    coarse, fine = combined.split('-')
+    return coarse, fine
+
+
+# take a coarse and fine label, and recombine them into how they would appear in
+# the FEWNERD dataset
+def recombine(coarse: str, fine: str) -> str:
+    assert '-' not in coarse and '-' not in fine
+    return f'{coarse}-{fine}'
+
 
 def _parse(filename):
     examples = []
@@ -148,15 +165,16 @@ def _parse(filename):
             if line:
                 token, label = line.split('\t')
                 current_tokens.append(token)
+
                 if label != 'O':
-                    coarse, fine = label.split('-')
-                    current_coarse.append(coarse)
-                    current_fine.append(fine)
-                    assert coarse in FEWNERD_COARSE_TYPES, coarse
-                    assert fine in FEWNERD_COARSE_TYPES_TO_FINE_TYPES[coarse], (coarse, fine)
+                    coarse, fine = split(label)
                 else:
-                    current_coarse.append(None)
-                    current_fine.append(None)
+                    coarse, fine = 'O', 'O'
+
+                current_coarse.append(coarse)
+                current_fine.append(fine)
+                assert coarse in FEWNERD_COARSE_TYPES, coarse
+                assert fine in FEWNERD_COARSE_TYPES_TO_FINE_TYPES[coarse], (coarse, fine)
 
             else:
                 add_to_examples()
