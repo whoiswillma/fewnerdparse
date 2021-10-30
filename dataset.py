@@ -106,6 +106,7 @@ FEWNERD_COARSE_FINE_TYPES: list[tuple[str, str]] = [
 def _parse(filename):
     examples = []
 
+    id: int = 0
     current_tokens: list[str] = []
     current_coarse: list[Optional[str]] = []
     current_fine: list[Optional[str]] = []
@@ -120,6 +121,7 @@ def _parse(filename):
         current_fine = []
 
     def add_to_examples():
+        nonlocal id
         nonlocal current_tokens
         nonlocal current_coarse
         nonlocal current_fine
@@ -129,10 +131,13 @@ def _parse(filename):
         assert len(current_tokens) == len(current_fine)
 
         examples.append({
+            'id': id,
             'tokens': current_tokens,
             'coarse_labels': current_coarse,
             'fine_labels': current_fine
         })
+
+        id += 1
 
     init_current()
 
