@@ -151,7 +151,8 @@ def _parse(filename):
             'id': id,
             'tokens': current_tokens,
             'coarse_labels': current_coarse,
-            'fine_labels': current_fine
+            'fine_labels': current_fine,
+            'coarse_fine_labels': list(zip(current_coarse, current_fine))
         })
 
         id += 1
