@@ -152,7 +152,7 @@ def _parse(filename):
             'tokens': current_tokens,
             'coarse_labels': current_coarse,
             'fine_labels': current_fine,
-            'coarse_fine_labels': list(zip(current_coarse, current_fine))
+            'coarse_fine_labels': zip(current_coarse, current_fine)
         })
 
         id += 1
@@ -186,22 +186,31 @@ def _parse(filename):
 
     return examples
 
+
 _SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
 
-FEWNERD_SUPERVISED = {
-    'train': _parse(os.path.join(_SCRIPT_DIR, 'supervised', 'train.txt')),
-    'dev': _parse(os.path.join(_SCRIPT_DIR, 'supervised', 'dev.txt')),
-    'test': _parse(os.path.join(_SCRIPT_DIR, 'supervised', 'test.txt')),
-}
 
-FEWNERD_INTRA = {
-    'train': _parse(os.path.join(_SCRIPT_DIR, 'intra', 'train.txt')),
-    'dev': _parse(os.path.join(_SCRIPT_DIR, 'intra', 'dev.txt')),
-    'test': _parse(os.path.join(_SCRIPT_DIR, 'intra', 'test.txt')),
-}
+def load_dataset(split, set='all'):
+    assert split in {'supervised', 'intra', 'inter'}
+    assert set in {'train', 'dev', 'test', 'all'}
 
-FEWNERD_INTER = {
-    'train': _parse(os.path.join(_SCRIPT_DIR, 'inter', 'train.txt')),
-    'dev': _parse(os.path.join(_SCRIPT_DIR, 'inter', 'dev.txt')),
-    'test': _parse(os.path.join(_SCRIPT_DIR, 'inter', 'test.txt')),
-}
+    if set == 'all':
+        return {
+            'train': load_dataset(split, 'train'),
+            'dev': load_dataset(split, 'dev'),
+            'test': load_dataset(split, 'test')
+        }
+
+    else:
+        return _parse(os.path.join(_SCRIPT_DIR, 'supervised', f'{set}.txt'))
+
+
+def __getattr__(name):
+    if name == 'FEWNERD_SUPERVISED':
+        return load_dataset('supervised')
+
+    elif name == 'FEWNERD_INTRA':
+        return load_dataset('intra')
+
+    elif name == 'FEWNERD_INTER':
+        return load_dataset('inter')
